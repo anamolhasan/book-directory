@@ -2,7 +2,10 @@
 
 import { NextFunction, Request, Response } from "express";
 import { bookService } from "./book.service";
+import { Book } from "./book.model";
 
+
+// get all book
 const getAllBooks = async(req: Request, res: Response, next: NextFunction) => {
   try {
 
@@ -15,8 +18,25 @@ const getAllBooks = async(req: Request, res: Response, next: NextFunction) => {
   }
 };
 
+// get single book by id
+const getSingleBook = async (req:Request, res:Response, next:NextFunction) => {
+   try {
+     const {id} = req.params
+     const book = await Book.findById(id)
 
+     if(!book){
+      res.status(404).json({
+        message:'Book not found'
+      })
+      return
+     }
+     res.status(200).json(book)
+   } catch (error:any) {
+     next(error)
+   }
+}
 
+// get create book
 const createBook = async(req: Request, res: Response, next: NextFunction) => {
     try {
         const bookData = req.body
@@ -31,7 +51,39 @@ const createBook = async(req: Request, res: Response, next: NextFunction) => {
     }
 }
 
+// update book info
+const updateBook = async(req:Request, res:Response, next:NextFunction) => {
+  try {
+    const bookId = req.params.id as string
+    const bookData = req.body
+
+    const updateBook = await bookService.updateBook(bookId, bookData)
+    res.status(200).json({
+      message:'Book updated successfully',
+      updateBook
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+const deleteBook = async (req:Request, res:Response, next:NextFunction) => {
+   try {
+     const book = await Book.findByIdAndDelete(req.params.id)
+
+     res.status(200).json({
+      message:'Book delete successfully',
+      book
+     })
+   } catch (error:any) {
+      next(error)
+   }
+}
+
 export const bookController = {
     getAllBooks,
     createBook,
+    getSingleBook,
+    updateBook,
+    deleteBook
 }
